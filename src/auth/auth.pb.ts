@@ -31,12 +31,17 @@ export interface ValidateResponse {
   valid: boolean;
 }
 
-export interface HashPasswordRequest {
-  password: string;
+export interface GetUserByJWTRequest {
+  jwtToken: string;
 }
 
-export interface HashPasswordResponse {
-  hashedpassword: string;
+export interface GetUserByJWTResponse {
+  user: GetUserByJWTResponse_User | undefined;
+}
+
+export interface GetUserByJWTResponse_User {
+  name: string;
+  email: string;
 }
 
 export const AUTH_PACKAGE_NAME = "auth";
@@ -47,6 +52,8 @@ export interface AuthServiceClient {
   login(request: LoginRequest): Observable<LoginResponse>;
 
   validate(request: ValidateRequest): Observable<ValidateResponse>;
+
+  getUserByJwt(request: GetUserByJWTRequest): Observable<GetUserByJWTResponse>;
 }
 
 export interface AuthServiceController {
@@ -55,11 +62,15 @@ export interface AuthServiceController {
   login(request: LoginRequest): Promise<LoginResponse> | Observable<LoginResponse> | LoginResponse;
 
   validate(request: ValidateRequest): Promise<ValidateResponse> | Observable<ValidateResponse> | ValidateResponse;
+
+  getUserByJwt(
+    request: GetUserByJWTRequest,
+  ): Promise<GetUserByJWTResponse> | Observable<GetUserByJWTResponse> | GetUserByJWTResponse;
 }
 
 export function AuthServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["register", "login", "validate"];
+    const grpcMethods: string[] = ["register", "login", "validate", "getUserByJwt"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("AuthService", method)(constructor.prototype[method], method, descriptor);
@@ -73,30 +84,3 @@ export function AuthServiceControllerMethods() {
 }
 
 export const AUTH_SERVICE_NAME = "AuthService";
-
-export interface HashServiceClient {
-  hashPassword(request: HashPasswordRequest): Observable<HashPasswordResponse>;
-}
-
-export interface HashServiceController {
-  hashPassword(
-    request: HashPasswordRequest,
-  ): Promise<HashPasswordResponse> | Observable<HashPasswordResponse> | HashPasswordResponse;
-}
-
-export function HashServiceControllerMethods() {
-  return function (constructor: Function) {
-    const grpcMethods: string[] = ["hashPassword"];
-    for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcMethod("HashService", method)(constructor.prototype[method], method, descriptor);
-    }
-    const grpcStreamMethods: string[] = [];
-    for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcStreamMethod("HashService", method)(constructor.prototype[method], method, descriptor);
-    }
-  };
-}
-
-export const HASH_SERVICE_NAME = "HashService";
